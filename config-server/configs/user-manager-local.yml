@@ -1,0 +1,6 @@
+DB_URL: jdbc:mysql://localhost:3306/user_manager?createDatabaseIfNotExist=true
+DB_USER: root
+DB_PASSWORD: root
+
+oauth2:
+  issuer-uri: http://localhost:9000
