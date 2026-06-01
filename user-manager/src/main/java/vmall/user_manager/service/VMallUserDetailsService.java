@@ -21,8 +21,10 @@ public class VMallUserDetailsService implements UserDetailsService {
 
     @Override
     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
+        System.out.println("LOGIN USER = " + username);
         User user = userRepository.findByUsername(username)
                 .orElseThrow(() -> new UsernameNotFoundException(username));
+        System.out.println("DB PASSWORD = " + user.getPassword());
         return new UserDetails() {
             @Override
             public Collection<? extends GrantedAuthority> getAuthorities() {
