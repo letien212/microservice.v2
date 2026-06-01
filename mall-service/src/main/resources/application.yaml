@@ -7,7 +7,7 @@ spring:
     oauth2:
       resourceserver:
         jwt:
-          issuer-uri: http://localhost:9000
+          issuer-uri: http://localhost:8001
   config:
     #    Imports configuration data from a config server when available
     import: "optional:configserver:"
