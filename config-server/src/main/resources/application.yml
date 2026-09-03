@@ -10,7 +10,7 @@ spring:
     config:
       server:
         native:
-          search-locations: file:///D:/microservice/config-server/configs
+          search-locations: classpath:/configs
 
 management:
   endpoints:
