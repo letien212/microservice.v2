@@ -1,0 +1,53 @@
+# để kích hoạt toàn bộ các services và database chỉ bằng 1 lệnh duy nhất
+
+version: '3.8'
+
+services:
+  mysql:
+    image: mysql:8.0
+    container_name: mysql-db
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_DATABASE: user_manager
+    ports:
+      - "3306:3306"
+
+  rabbitmq:
+    image: rabbitmq:3-management
+    container_name: rabbitmq
+    ports:
+      - "5672:5672"
+      - "15672:15672"
+
+  config-server:
+    build: ./config-server
+    container_name: config-server
+    ports:
+      - "6969:6969"
+
+  discovery-service:
+    build: ./discovery-service
+    container_name: discovery-service
+    ports:
+      - "8762:8762"
+    depends_on:
+      - config-server
+
+  user-manager:
+    build: ./user-manager
+    container_name: user-manager
+    ports:
+      - "8001:8001"
+    depends_on:
+      - config-server
+      - discovery-service
+      - mysql
+      - rabbitmq
+
+  api-gateway:
+    build: ./api-gateway
+    container_name: api-gateway
+    ports:
+      - "8888:8888"
+    depends_on:
+      - discovery-service
