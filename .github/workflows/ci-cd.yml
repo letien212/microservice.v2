@@ -7,7 +7,7 @@ on:
       - master
 
 jobs:
-  # Giai đoạn 1: CI (Continuous Integration - Build & Test)
+  # Giai đoạn 1: CI (Continuous Integration - Build & Test tất cả service)
   build-and-test:
     runs-on: ubuntu-latest
     steps:
@@ -21,17 +21,34 @@ jobs:
           distribution: "temurin"
           cache: maven
 
-      - name: Build & Install Common Library
+      # 1. Build & Install thư viện dùng chung
+      - name: Build Common Library
         run: |
           cd common-lib/common-lib
           mvn clean install -DskipTests
 
-      - name: Build & Test User Manager Service
+      # 2. Build & Test toàn bộ các Microservices
+      - name: Build Config Server
+        run: |
+          cd config-server
+          mvn clean package -DskipTests
+
+      - name: Build Discovery Service
+        run: |
+          cd discovery-service
+          mvn clean package -DskipTests
+
+      - name: Build User Manager
         run: |
           cd user-manager
           mvn clean package -DskipTests
 
-  # Giai đoạn 2: CD (Continuous Deployment - Build Docker Image & Push to Docker Hub)
+      - name: Build API Gateway
+        run: |
+          cd api-gateway
+          mvn clean package -DskipTests
+
+  # Giai đoạn 2: CD (Continuous Deployment - Đóng gói Docker & Push trọn bộ lên Docker Hub)
   build-and-push-docker:
     needs: build-and-test
     runs-on: ubuntu-latest
@@ -45,6 +62,25 @@ jobs:
           username: ${{ secrets.DOCKER_USERNAME }}
           password: ${{ secrets.DOCKER_PASSWORD }}
 
+      # 1. Push Config Server Image
+      - name: Build & Push Config Server Image
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          file: ./config-server/Dockerfile
+          push: true
+          tags: ${{ secrets.DOCKER_USERNAME }}/config-server:latest
+
+      # 2. Push Discovery Service Image
+      - name: Build & Push Discovery Service Image
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          file: ./discovery-service/Dockerfile
+          push: true
+          tags: ${{ secrets.DOCKER_USERNAME }}/discovery-service:latest
+
+      # 3. Push User Manager Image
       - name: Build & Push User Manager Image
         uses: docker/build-push-action@v5
         with:
@@ -52,3 +88,12 @@ jobs:
           file: ./user-manager/Dockerfile
           push: true
           tags: ${{ secrets.DOCKER_USERNAME }}/user-manager:latest
+
+      # 4. Push API Gateway Image
+      - name: Build & Push API Gateway Image
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          file: ./api-gateway/Dockerfile
+          push: true
+          tags: ${{ secrets.DOCKER_USERNAME }}/api-gateway:latest

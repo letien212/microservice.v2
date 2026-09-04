@@ -14,7 +14,7 @@ spring:
           issuer-uri: http://localhost:8001
   config:
     #    Imports configuration data from a config server when available
-    import: "configserver:"
+    import: "optional:configserver:"
   cloud:
     config:
       uri: ${CONFIG_SERVER_URL:http://localhost:6969}

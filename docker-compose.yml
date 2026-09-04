@@ -1,8 +1,11 @@
-# để kích hoạt toàn bộ các services và database chỉ bằng 1 lệnh duy nhất
-
 version: '3.8'
 
+networks:
+  microservice-net:
+    driver: bridge
+
 services:
+  # 1. Cơ sở dữ liệu MySQL
   mysql:
     image: mysql:8.0
     container_name: mysql-db
@@ -11,43 +14,70 @@ services:
       MYSQL_DATABASE: user_manager
     ports:
       - "3306:3306"
+    networks:
+      - microservice-net
 
+  # 2. Message Broker RabbitMQ
   rabbitmq:
     image: rabbitmq:3-management
     container_name: rabbitmq
     ports:
       - "5672:5672"
       - "15672:15672"
+    networks:
+      - microservice-net
 
+  # 3. Config Server
   config-server:
-    build: ./config-server
+    image: ndtien212/config-server:latest
     container_name: config-server
     ports:
       - "6969:6969"
+    networks:
+      - microservice-net
 
+  # 4. Discovery Service (Eureka Server)
   discovery-service:
-    build: ./discovery-service
+    image: ndtien212/discovery-service:latest
     container_name: discovery-service
     ports:
       - "8762:8762"
+    environment:
+      - CONFIG_SERVER_URL=http://config-server:6969
     depends_on:
       - config-server
+    networks:
+      - microservice-net
 
+  # 5. User Manager Microservice
   user-manager:
-    build: ./user-manager
+    image: ndtien212/user-manager:latest
     container_name: user-manager
     ports:
       - "8001:8001"
+    environment:
+      - CONFIG_SERVER_URL=http://config-server:6969
+      - EUREKA_SERVER=http://discovery-service:8762/eureka/
+      - SPRING_DATASOURCE_URL=jdbc:mysql://mysql:3306/user_manager?createDatabaseIfNotExist=true&useSSL=false
+      - SPRING_RABBITMQ_HOST=rabbitmq
     depends_on:
       - config-server
       - discovery-service
       - mysql
       - rabbitmq
+    networks:
+      - microservice-net
 
+  # 6. API Gateway
   api-gateway:
-    build: ./api-gateway
+    image: ndtien212/api-gateway:latest
     container_name: api-gateway
     ports:
       - "8888:8888"
+    environment:
+      - CONFIG_SERVER_URL=http://config-server:6969
+      - EUREKA_SERVER=http://discovery-service:8762/eureka/
     depends_on:
       - discovery-service
+    networks:
+      - microservice-net
