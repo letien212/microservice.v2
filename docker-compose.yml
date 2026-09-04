@@ -58,7 +58,7 @@ services:
     environment:
       - CONFIG_SERVER_URL=http://config-server:6969
       - EUREKA_SERVER=http://discovery-service:8762/eureka/
-      - SPRING_DATASOURCE_URL=jdbc:mysql://mysql:3306/user_manager?createDatabaseIfNotExist=true&useSSL=false
+      - SPRING_DATASOURCE_URL=jdbc:mysql://mysql:3306/user_manager?createDatabaseIfNotExist=true&useSSL=false&allowPublicKeyRetrieval=true
       - SPRING_RABBITMQ_HOST=rabbitmq
     depends_on:
       - config-server
