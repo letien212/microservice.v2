@@ -5,11 +5,9 @@ FROM maven:3.9-eclipse-temurin-17-alpine AS builder
 
 WORKDIR /app
 
-COPY pom.xml .
-RUN mvn dependency:go-offline -B
-
-COPY src ./src
-RUN mvn clean package -DskipTests
+# Copy and build api-gateway service
+COPY api-gateway ./api-gateway
+RUN cd api-gateway && mvn clean package -DskipTests
 
 # ==============================================================================
 # Production Runtime Stage (Lightweight & Secure)
@@ -22,7 +20,7 @@ RUN apk add --no-cache curl && \
 
 WORKDIR /app
 
-COPY --from=builder /app/target/*.jar app.jar
+COPY --from=builder /app/api-gateway/target/*.jar app.jar
 
 RUN chown -R appuser:appgroup /app
 
