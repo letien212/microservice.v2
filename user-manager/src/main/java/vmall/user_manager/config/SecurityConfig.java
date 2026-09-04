@@ -46,7 +46,7 @@ import org.springframework.web.cors.CorsConfiguration;
 @EnableWebSecurity
 public class SecurityConfig {
 
-    @Value("${oauth2.issuer-uri}")
+    @Value("${oauth2.issuer-uri:http://localhost:8001}")
     private String issuerUri;
 
     @Bean
