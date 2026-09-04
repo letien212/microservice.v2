@@ -21,6 +21,11 @@ jobs:
           distribution: "temurin"
           cache: maven
 
+      - name: Build & Install Common Library
+        run: |
+          cd common-lib/common-lib
+          mvn clean install -DskipTests
+
       - name: Build & Test User Manager Service
         run: |
           cd user-manager
@@ -43,7 +48,7 @@ jobs:
       - name: Build & Push User Manager Image
         uses: docker/build-push-action@v5
         with:
-          context: ./user-manager
+          context: .
           file: ./user-manager/Dockerfile
           push: true
           tags: ${{ secrets.DOCKER_USERNAME }}/user-manager:latest
